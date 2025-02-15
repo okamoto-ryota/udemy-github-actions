@@ -141,3 +141,62 @@ resource "aws_key_pair" "ssh_ec2_main" {
     Name = "${var.emp_id}_key_pair_ssh_ec2_main"
   }
 }
+
+resource "aws_s3_bucket" "frontend" {
+  bucket = "${var.emp_id}-udemy-github-actions-s3"
+
+  tags = {
+    Name = "${var.emp_id}_frontend_bucket"
+  }
+}
+
+resource "aws_iam_policy" "github_actions_s3" {
+  name = "${var.emp_id}-udemy-github-actions-frontend-deployment-policy"
+  policy = jsonencode({
+    Statement = [
+      {
+        Action   = "s3:ListBucket"
+        Effect   = "Allow"
+        Resource = aws_s3_bucket.frontend.arn
+        Sid      = "VisualEditor0"
+      },
+      {
+        Action   = "s3:PutObject"
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.frontend.arn}/*"
+        Sid      = "VisualEditor1"
+      }
+    ]
+    Version = "2012-10-17"
+  })
+}
+
+resource "aws_iam_role" "github_actions" {
+  name = "${var.emp_id}-udemy-github-actions-frontend-deployment-role"
+  assume_role_policy = jsonencode({
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+            "token.actions.githubusercontent.com:sub" = "repo:okamoto-ryota/udemy-github-actions:ref:refs/heads/main"
+          }
+        }
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::527412143144:oidc-provider/token.actions.githubusercontent.com"
+        }
+      }
+    ]
+    Version = "2012-10-17"
+  })
+}
+
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com",
+  ]
+}
