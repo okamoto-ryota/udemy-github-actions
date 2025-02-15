@@ -9,9 +9,19 @@ defaults:
   run:
     working-directory: frontend
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: arn:aws:iam::527412143144:role/52005-udemy-github-actions-frontend-deployment-role
+          aws-region: ap-northeast-1
+
       - run: aws s3 sync . s3://52005-udemy-github-actions-s3 --exact-timestamps --region ap-northeast-1
