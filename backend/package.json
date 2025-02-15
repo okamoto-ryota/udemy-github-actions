@@ -7,7 +7,8 @@
     "dev": "nodemon",
     "test": "jest",
     "test:api": "stepci run stepci/workflow.yml",
-    "build": "ncc build"
+    "build": "ncc build",
+    "rsync": "rsync -v -e ssh dist/index.js udemy-github-actions:~/index.js"
   },
   "author": "",
   "license": "ISC",
