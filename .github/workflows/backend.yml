@@ -43,7 +43,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event.name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: shimataro/ssh-key-action@v2
